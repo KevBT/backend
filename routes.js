@@ -11,7 +11,6 @@ route.use(bodyParser.json());
 const PORT = 100;
 // Database
 const connection = require("./db.js");
-const { TokenExpiredError } = require("jsonwebtoken");
 
 connection.connect(function (err) {
   if (err) {
@@ -159,7 +158,7 @@ route.get("/api/game/listmessages/:id", (req, res) => {
     });
   });
 });
-route.listen(PORT, function (err) {
+route.listen(PORT , function (err) {
   if (err) console.log(err);
   console.log("listener");
 });

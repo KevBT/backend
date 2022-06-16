@@ -9,6 +9,8 @@ route.use(cors());
 route.use(bodyParser.json());
 // Port
 const PORT = 100;
+const {PASS} = require ("./resources")
+
 // Database
 const connection = require("./db.js");
 
@@ -53,7 +55,6 @@ route.post("/api/login", async (req, res, next) => {
       passwordHash === null
         ? false
         : await bcrypt.compare(password, passwordHash);
-
     if (!passwordCorrect) {
       return res.status(401).json({
         error: "Invalid user or password!",
@@ -63,10 +64,9 @@ route.post("/api/login", async (req, res, next) => {
       id: data.id,
       nickname: data.nickname,
     };
-    const token = jwt.sign(userForToken, "123", {
+    const token = jwt.sign(userForToken, PASS, {
       expiresIn: 60 * 60 * 24 * 7,
     });
-
     res.status(200).send({
       code: 200,
       token: token,
@@ -80,10 +80,10 @@ route.get("/api/userdata", (req, res) => {
   if (authorization && authorization.toLowerCase().startsWith("bearer")) {
     token = authorization.substring(7);
   }
-  const decodedToken = jwt.verify(token, "123", (err, decoded) => {
-    if (err) {
-      return res.status(401).json({ error: "token missing or invalid" });
-    }
+    jwt.verify(token, PASS, (err, decoded) => {
+     if (err) {
+         return res.status(401).json({ error: "token missing or invalid" });
+      }
     let nickname = decoded.nickname;
     const sql =
       "select * from users INNER JOIN avatars ON users.avatar_id = avatars.id_avatar WHERE nickname = ?";
@@ -124,7 +124,7 @@ route.post("/api/create/message/user", (req, res) => {
   if (authorization && authorization.toLowerCase().startsWith("bearer")) {
     token = authorization.substring(7);
   }
-  const decodedToken = jwt.verify(token, "123");
+  const decodedToken = jwt.verify(token, PASS);
   if (!token || !decodedToken.id) {
     return res.status(401).json({ error: "token missing or invalid" });
   }
@@ -160,5 +160,5 @@ route.get("/api/game/listmessages/:id", (req, res) => {
 });
 route.listen(PORT , function (err) {
   if (err) console.log(err);
-  console.log("listener");
+  console.log("Servidor corriendo");
 });

@@ -9,7 +9,7 @@ route.use(cors());
 route.use(bodyParser.json());
 // Port
 const PORT = 100;
-const {PASS} = require ("./resources")
+const PASS = require ("./resources")
 
 // Database
 const connection = require("./db.js");
@@ -158,6 +158,28 @@ route.get("/api/game/listmessages/:id", (req, res) => {
     });
   });
 });
+
+route.get("/api/listfriends", (req, res) => {
+  const authorization = req.get("authorization");
+  let token = null;
+  if (authorization && authorization.toLowerCase().startsWith("bearer")) {
+    token = authorization.substring(7);
+  }
+  const decodedToken = jwt.verify(token, PASS);
+  let id = decodedToken.id
+  if (!token || !id) {
+    return res.status(401).json({ error: "token missing or invalid" });
+  }
+  let sql = 'SELECT * FROM friends where user=?'
+  connection.query(sql, [id], (err, fields) => {
+    if (err) throw err;
+    let data = fields[0];
+    res.status(200).json({
+      data
+    });
+  });
+})
+
 route.listen(PORT , function (err) {
   if (err) console.log(err);
   console.log("Servidor corriendo");
